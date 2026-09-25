@@ -1,12 +1,5 @@
 # java-Expense-app
 
-## 必要環境
-
-- Docker / Docker Compose
-- Git
-
-Java や Gradle のインストールは不要です。
-
 ## 環境構築
 
 ① ブラウザで以下にアクセスする。
@@ -53,6 +46,15 @@ git push origin <ブランチ名>
 ⑨ `main` ブランチ向けの Pull Request（PR）を作成する。
 
 不具合1件につき PR を1本作る。
+
+## 各種資料
+- [仕様書](https://docs.google.com/document/d/1VQXKLP7AfKiuNDkyLfnITViMbQZ-a9ovd-xmws9SaGE/edit?tab=t.0)
+- [テーブル定義書](https://docs.google.com/spreadsheets/d/1-3y0G2V3uBkmht7qK8dBdykN3xW0Ha4XsQubj_ehz1o/edit?gid=0#gid=0)
+- [テストケース](https://docs.google.com/spreadsheets/d/1HPA0rZDAcmpzk9sZD0kjksv_7SdSa73u/edit?gid=233462725#gid=233462725)
+
+※テストケースは自身の個人ドライブにコピーして使用してください
+
+※仕様書/テーブル定義書は編集厳禁です。
 
 ## Pull Request（PR）の記載事項
 
