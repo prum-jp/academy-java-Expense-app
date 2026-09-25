@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.expenseapp.mapper.TaxRateMapper">
+
+    <resultMap id="taxRateMap" type="com.example.expenseapp.entity.TaxRate">
+        <id column="tax_id" property="taxId"/>
+        <result column="rate_percent" property="ratePercent"/>
+        <result column="description" property="description"/>
+    </resultMap>
+
+    <select id="findById" resultMap="taxRateMap">
+        SELECT tax_id, rate_percent, description
+        FROM tax_rates
+        WHERE tax_id = #{taxId}
+    </select>
+
+    <select id="findAll" resultMap="taxRateMap">
+        SELECT tax_id, rate_percent, description
+        FROM tax_rates
+        ORDER BY tax_id
+    </select>
+</mapper>

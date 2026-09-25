@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.expenseapp.mapper.ExpenseCategoryMapper">
+
+    <resultMap id="categoryMap" type="com.example.expenseapp.entity.ExpenseCategory">
+        <id column="category_id" property="categoryId"/>
+        <result column="category_name" property="categoryName"/>
+    </resultMap>
+
+    <select id="findById" resultMap="categoryMap">
+        SELECT category_id, category_name
+        FROM expense_categories
+        WHERE category_id = #{categoryId}
+    </select>
+
+    <select id="findAll" resultMap="categoryMap">
+        SELECT category_id, category_name
+        FROM expense_categories
+        ORDER BY category_id
+    </select>
+</mapper>

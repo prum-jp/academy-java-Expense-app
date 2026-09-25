@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.expenseapp.mapper.ExpenseMapper">
+
+    <resultMap id="expenseListMap" type="com.example.expenseapp.entity.Expense">
+        <id column="expense_id" property="expenseId"/>
+        <result column="user_id" property="userId"/>
+        <result column="title" property="title"/>
+        <result column="status" property="status"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="submitted_at" property="submittedAt"/>
+        <result column="version" property="version"/>
+        <association property="applicant" javaType="com.example.expenseapp.entity.User">
+            <id column="applicant_user_id" property="userId"/>
+            <result column="applicant_user_name" property="userName"/>
+            <result column="applicant_email" property="email"/>
+            <result column="applicant_dept_id" property="deptId"/>
+            <result column="applicant_position_id" property="positionId"/>
+            <result column="applicant_role" property="role"/>
+            <association property="department" javaType="com.example.expenseapp.entity.Department">
+                <id column="applicant_dept_id" property="deptId"/>
+                <result column="applicant_dept_name" property="deptName"/>
+            </association>
+            <association property="position" javaType="com.example.expenseapp.entity.Position">
+                <id column="applicant_position_id" property="positionId"/>
+                <result column="applicant_position_name" property="positionName"/>
+                <result column="applicant_rank_level" property="rankLevel"/>
+            </association>
+        </association>
+    </resultMap>
+
+    <resultMap id="expenseWithDetailsMap" type="com.example.expenseapp.entity.Expense" extends="expenseListMap">
+        <collection property="details" ofType="com.example.expenseapp.entity.ExpenseDetail">
+            <id column="detail_id" property="detailId"/>
+            <result column="detail_expense_id" property="expenseId"/>
+            <result column="expense_date" property="expenseDate"/>
+            <result column="detail_category_id" property="categoryId"/>
+            <result column="detail_tax_id" property="taxId"/>
+            <result column="amount" property="amount"/>
+            <result column="memo" property="memo"/>
+            <association property="category" javaType="com.example.expenseapp.entity.ExpenseCategory">
+                <id column="detail_category_id" property="categoryId"/>
+                <result column="category_name" property="categoryName"/>
+            </association>
+            <association property="taxRate" javaType="com.example.expenseapp.entity.TaxRate">
+                <id column="detail_tax_id" property="taxId"/>
+                <result column="rate_percent" property="ratePercent"/>
+                <result column="tax_description" property="description"/>
+            </association>
+        </collection>
+        <collection property="receiptImages" ofType="com.example.expenseapp.entity.ReceiptImage">
+            <id column="ri_image_id" property="imageId"/>
+            <result column="ri_expense_id" property="expenseId"/>
+            <result column="ri_file_path" property="filePath"/>
+            <result column="ri_uploaded_at" property="uploadedAt"/>
+        </collection>
+        <collection property="approvalHistories" ofType="com.example.expenseapp.entity.ApprovalHistory">
+            <id column="ah_history_id" property="historyId"/>
+            <result column="ah_expense_id" property="expenseId"/>
+            <result column="ah_approver_user_id" property="approverUserId"/>
+            <result column="ah_action" property="action"/>
+            <result column="ah_comment" property="comment"/>
+            <result column="ah_created_at" property="createdAt"/>
+            <association property="approver" javaType="com.example.expenseapp.entity.User">
+                <id column="ah_approver_user_id" property="userId"/>
+                <result column="ah_approver_user_name" property="userName"/>
+            </association>
+        </collection>
+    </resultMap>
+
+    <sql id="applicantJoinColumns">
+        e.expense_id,
+        e.user_id,
+        e.title,
+        e.status,
+        e.total_amount,
+        e.submitted_at,
+        e.version,
+        u.user_id AS applicant_user_id,
+        u.user_name AS applicant_user_name,
+        u.email AS applicant_email,
+        u.dept_id AS applicant_dept_id,
+        u.position_id AS applicant_position_id,
+        u.role AS applicant_role,
+        d.dept_name AS applicant_dept_name,
+        p.position_name AS applicant_position_name,
+        p.rank_level AS applicant_rank_level
+    </sql>
+
+    <sql id="applicantJoins">
+        INNER JOIN users u ON e.user_id = u.user_id
+        INNER JOIN departments d ON u.dept_id = d.dept_id
+        INNER JOIN positions p ON u.position_id = p.position_id
+    </sql>
+
+    <sql id="expenseDetailJoinColumns">
+        ed.detail_id,
+        ed.expense_id AS detail_expense_id,
+        ed.expense_date,
+        ed.category_id AS detail_category_id,
+        ed.tax_id AS detail_tax_id,
+        ed.amount,
+        ed.memo,
+        c.category_name,
+        t.rate_percent,
+        t.description AS tax_description,
+        ri.image_id AS ri_image_id,
+        ri.expense_id AS ri_expense_id,
+        ri.file_path AS ri_file_path,
+        ri.uploaded_at AS ri_uploaded_at,
+        ah.history_id AS ah_history_id,
+        ah.expense_id AS ah_expense_id,
+        ah.approver_user_id AS ah_approver_user_id,
+        ah.action AS ah_action,
+        ah.comment AS ah_comment,
+        ah.created_at AS ah_created_at,
+        ah_u.user_name AS ah_approver_user_name
+    </sql>
+
+    <sql id="expenseDetailJoins">
+        LEFT JOIN expense_details ed ON e.expense_id = ed.expense_id
+        LEFT JOIN expense_categories c ON ed.category_id = c.category_id
+        LEFT JOIN tax_rates t ON ed.tax_id = t.tax_id
+        LEFT JOIN receipt_images ri ON e.expense_id = ri.expense_id
+        LEFT JOIN approval_histories ah ON e.expense_id = ah.expense_id
+        LEFT JOIN users ah_u ON ah.approver_user_id = ah_u.user_id
+    </sql>
+
+    <sql id="expenseDetailOrderBy">
+        ORDER BY ed.detail_id, ri.uploaded_at, ri.image_id, ah.created_at, ah.history_id
+    </sql>
+
+    <sql id="titleKeywordCondition">
+        <if test="keyword != null and keyword != ''">
+            AND e.title LIKE CONCAT('%', #{keyword}, '%') ESCAPE '|'
+        </if>
+    </sql>
+
+    <sql id="keywordCondition">
+        <if test="keyword != null and keyword != ''">
+            AND (
+                e.title LIKE CONCAT('%', #{keyword}, '%') ESCAPE '|'
+                OR u.user_name LIKE CONCAT('%', #{keyword}, '%') ESCAPE '|'
+                OR CASE u.user_name
+                    WHEN 'yamada' THEN '山田'
+                    WHEN 'sato' THEN '佐藤'
+                    WHEN 'takahashi' THEN '高橋'
+                    WHEN 'ito' THEN '伊藤'
+                    WHEN 'suzuki' THEN '鈴木'
+                END LIKE CONCAT('%', #{keyword}, '%') ESCAPE '|'
+            )
+        </if>
+    </sql>
+
+    <sql id="approvesSinceLastSubmit">
+        SELECT COUNT(*) + 1
+        FROM approval_histories ah_step
+        WHERE ah_step.expense_id = e.expense_id
+          AND ah_step.action IN ('APPROVE', 'REJECT')
+    </sql>
+
+    <sql id="currentApprovalStepExists">
+        EXISTS (
+            SELECT 1
+            FROM approval_routes ar
+            WHERE ar.dept_id = u.dept_id
+              AND ar.approver_user_id = #{approverUserId}
+              AND ar.step_number = (
+                  <include refid="approvesSinceLastSubmit"/>
+              )
+        )
+    </sql>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="expenseId">
+        INSERT INTO expenses (user_id, title, status, total_amount, submitted_at, version)
+        VALUES (#{userId}, #{title}, #{status}, #{totalAmount}, #{submittedAt}, 0)
+    </insert>
+
+    <update id="updateWithVersion">
+        UPDATE expenses
+        SET title = #{title},
+            status = #{status},
+            total_amount = #{totalAmount},
+            submitted_at = #{submittedAt},
+            version = version + 1
+        WHERE expense_id = #{expenseId}
+          AND version = #{version}
+    </update>
+
+    <update id="updateById">
+        UPDATE expenses
+        SET title = #{title},
+            status = #{status},
+            total_amount = #{totalAmount},
+            submitted_at = #{submittedAt},
+            version = version + 1
+        WHERE expense_id = #{expenseId}
+    </update>
+
+    <delete id="deleteByIdUserIdAndVersion">
+        DELETE FROM expenses
+        WHERE expense_id = #{expenseId}
+          AND user_id = #{userId}
+          AND version = #{version}
+    </delete>
+
+    <delete id="deleteByIdAndUserId">
+        DELETE FROM expenses
+        WHERE expense_id = #{expenseId}
+          AND user_id = #{userId}
+    </delete>
+
+    <select id="findById" resultMap="expenseWithDetailsMap">
+        SELECT
+        <include refid="applicantJoinColumns"/>,
+        <include refid="expenseDetailJoinColumns"/>
+        FROM expenses e
+        <include refid="applicantJoins"/>
+        <include refid="expenseDetailJoins"/>
+        WHERE e.expense_id = #{expenseId}
+        <include refid="expenseDetailOrderBy"/>
+    </select>
+
+    <select id="findByIdAndUserId" resultMap="expenseWithDetailsMap">
+        SELECT
+        <include refid="applicantJoinColumns"/>,
+        <include refid="expenseDetailJoinColumns"/>
+        FROM expenses e
+        <include refid="applicantJoins"/>
+        <include refid="expenseDetailJoins"/>
+        WHERE e.expense_id = #{expenseId}
+          AND e.user_id = #{userId}
+        <include refid="expenseDetailOrderBy"/>
+    </select>
+
+    <select id="findAccessibleByApprover" resultMap="expenseWithDetailsMap">
+        SELECT
+        <include refid="applicantJoinColumns"/>,
+        <include refid="expenseDetailJoinColumns"/>
+        FROM expenses e
+        <include refid="applicantJoins"/>
+        <include refid="expenseDetailJoins"/>
+        WHERE e.expense_id = #{expenseId}
+          AND e.status IN ('PENDING', 'APPROVED', 'REJECTED')
+          AND EXISTS (
+              SELECT 1
+              FROM approval_routes ar
+              WHERE ar.dept_id = u.dept_id
+                AND ar.approver_user_id = #{approverUserId}
+          )
+        <include refid="expenseDetailOrderBy"/>
+    </select>
+
+    <select id="findMyExpenses" resultMap="expenseListMap">
+        SELECT
+        <include refid="applicantJoinColumns"/>
+        FROM expenses e
+        <include refid="applicantJoins"/>
+        WHERE e.user_id = #{userId}
+        <include refid="titleKeywordCondition"/>
+        <if test="status != null">
+            AND e.status = #{status}
+        </if>
+        ORDER BY e.expense_id DESC
+        LIMIT 100
+    </select>
+
+    <select id="findPendingForApprover" resultMap="expenseListMap">
+        SELECT
+        <include refid="applicantJoinColumns"/>
+        FROM expenses e
+        <include refid="applicantJoins"/>
+        WHERE e.status = 'PENDING'
+          AND <include refid="currentApprovalStepExists"/>
+        <include refid="keywordCondition"/>
+        ORDER BY e.submitted_at ASC, e.expense_id ASC
+        LIMIT 100
+    </select>
+
+    <select id="findProcessedForApprover" resultMap="expenseListMap">
+        SELECT
+        <include refid="applicantJoinColumns"/>
+        FROM expenses e
+        <include refid="applicantJoins"/>
+        WHERE EXISTS (
+            SELECT 1
+            FROM approval_histories ah
+            WHERE ah.expense_id = e.expense_id
+              AND ah.approver_user_id = #{approverUserId}
+              AND ah.action IN ('APPROVE', 'REJECT')
+        )
+        <include refid="keywordCondition"/>
+        ORDER BY e.expense_id DESC
+        LIMIT 100
+    </select>
+</mapper>

@@ -1,0 +1,3 @@
+spring.datasource.url=jdbc:mysql://localhost:3307/expense_db?useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_0900_ai_ci&serverTimezone=Asia/Tokyo&allowPublicKeyRetrieval=true&useSSL=false
+spring.datasource.username=expense_user
+spring.datasource.password=expense_pass

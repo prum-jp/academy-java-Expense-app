@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: head(#{approval.list.title})}"></head>
+<body class="app-body">
+<nav th:replace="~{layout/fragments :: navbar}"></nav>
+<div th:replace="~{layout/fragments :: alerts}"></div>
+
+<main class="app-main">
+    <div class="container">
+        <h1 class="page-title" th:text="#{approval.list.title}">承認待ち一覧</h1>
+
+        <div class="card app-card mb-4">
+            <div class="card-body">
+                <form th:action="@{/approvals}" method="get" class="row g-3 align-items-end">
+                    <div class="col-md-9">
+                        <label class="form-label" for="keyword">キーワード</label>
+                        <input type="text" class="form-control" id="keyword" name="keyword"
+                               th:value="${keyword}" placeholder="件名またはユーザー名（例: yamada）">
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-search me-1"></i><span th:text="#{common.search}">検索</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <h2 class="h5 mb-3">承認待ち</h2>
+        <div class="card app-card mb-5">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-app table-hover mb-0">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th th:text="#{expense.field.title}">件名</th>
+                            <th>申請者</th>
+                            <th>部署</th>
+                            <th class="text-end" th:text="#{expense.field.totalAmount}">合計</th>
+                            <th th:text="#{expense.field.submittedAt}">申請日時</th>
+                            <th th:text="#{common.actions}">操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="expense : ${expenses}">
+                            <td th:text="${expense.expenseId}">1</td>
+                            <td th:text="${expense.title}">件名</td>
+                            <td th:text="${expense.applicant != null ? expense.applicant.userName : '-'}">-</td>
+                            <td th:text="${expense.applicant != null && expense.applicant.department != null ? expense.applicant.department.deptName : '-'}">-</td>
+                            <td class="amount-cell">
+                                <span th:text="${#numbers.formatInteger(expense.totalAmount, 0, 'COMMA')} + ' 円'">0 円</span>
+                            </td>
+                            <td>
+                                <span th:if="${expense.submittedAt != null}"
+                                      th:text="${#temporals.format(expense.submittedAt, 'yyyy/MM/dd HH:mm')}">-</span>
+                            </td>
+                            <td>
+                                <a th:href="@{/approvals/{id}(id=${expense.expenseId})}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-check2-square me-1"></i><span th:text="#{common.detail}">詳細</span>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(expenses)}">
+                            <td colspan="7" class="text-center text-muted py-5" th:text="#{common.noData}">データがありません</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="h5 mb-3" th:text="#{approval.processed.title}">処理済み</h2>
+        <div class="card app-card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-app table-hover mb-0">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th th:text="#{expense.field.title}">件名</th>
+                            <th>申請者</th>
+                            <th>部署</th>
+                            <th th:text="#{expense.field.status}">ステータス</th>
+                            <th class="text-end" th:text="#{expense.field.totalAmount}">合計</th>
+                            <th th:text="#{expense.field.submittedAt}">申請日時</th>
+                            <th th:text="#{common.actions}">操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="expense : ${processedExpenses}">
+                            <td th:text="${expense.expenseId}">1</td>
+                            <td th:text="${expense.title}">件名</td>
+                            <td th:text="${expense.applicant != null ? expense.applicant.userName : '-'}">-</td>
+                            <td th:text="${expense.applicant != null && expense.applicant.department != null ? expense.applicant.department.deptName : '-'}">-</td>
+                            <td>
+                                <span class="badge status-badge"
+                                      th:classappend="${expense.status.name() == 'PENDING'} ? 'bg-warning text-dark' :
+                                      (${expense.status.name() == 'APPROVED'} ? 'bg-success' : 'bg-danger')"
+                                      th:text="#{|expense.status.${expense.status}|}">承認待ち</span>
+                            </td>
+                            <td class="amount-cell">
+                                <span th:text="${#numbers.formatInteger(expense.totalAmount, 0, 'COMMA')} + ' 円'">0 円</span>
+                            </td>
+                            <td>
+                                <span th:if="${expense.submittedAt != null}"
+                                      th:text="${#temporals.format(expense.submittedAt, 'yyyy/MM/dd HH:mm')}">-</span>
+                            </td>
+                            <td>
+                                <a th:href="@{/approvals/{id}(id=${expense.expenseId})}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye me-1"></i><span th:text="#{common.detail}">詳細</span>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(processedExpenses)}">
+                            <td colspan="8" class="text-center text-muted py-5" th:text="#{common.noData}">データがありません</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{layout/fragments :: footer}"></footer>
+<th:block th:replace="~{layout/fragments :: scripts}"></th:block>
+</body>
+</html>

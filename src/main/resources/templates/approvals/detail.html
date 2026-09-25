@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: head(#{approval.form.title})}"></head>
+<body class="app-body">
+<nav th:replace="~{layout/fragments :: navbar}"></nav>
+<div th:replace="~{layout/fragments :: alerts}"></div>
+
+<main class="app-main">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="page-title" th:text="#{approval.form.title}">承認処理</h1>
+                <p class="page-subtitle mb-0" th:text="${expense.title}">件名</p>
+            </div>
+            <a th:href="@{/approvals}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i><span th:text="#{common.back}">戻る</span>
+            </a>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card app-card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>申請内容</span>
+                        <span class="badge status-badge"
+                              th:classappend="${expense.status.name() == 'PENDING'} ? 'bg-warning text-dark' :
+                              (${expense.status.name() == 'APPROVED'} ? 'bg-success' : 'bg-danger')"
+                              th:text="#{|expense.status.${expense.status}|}">ステータス</span>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4" th:text="#{expense.field.title}">件名</dt>
+                            <dd class="col-sm-8" th:text="${expense.title}">-</dd>
+                            <dt class="col-sm-4">申請者</dt>
+                            <dd class="col-sm-8" th:if="${expense.applicant != null}">
+                                <span th:text="${expense.applicant.userName}">name</span>
+                                <span class="text-muted"
+                                      th:text="'（' + ${expense.applicant.department.deptName} + ' / ' + ${expense.applicant.position.positionName} + '）'"></span>
+                            </dd>
+                            <dt class="col-sm-4" th:text="#{expense.field.totalAmount}">合計金額</dt>
+                            <dd class="col-sm-8 amount-cell">
+                                <span th:text="${#numbers.formatInteger(expense.totalAmount, 0, 'COMMA')} + ' 円'">0 円</span>
+                            </dd>
+                            <dt class="col-sm-4" th:text="#{expense.field.submittedAt}">申請日時</dt>
+                            <dd class="col-sm-8"
+                                th:text="${expense.submittedAt != null ? #temporals.format(expense.submittedAt, 'yyyy/MM/dd HH:mm') : '-'}">-</dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <div class="card app-card mb-4">
+                    <div class="card-header">明細</div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-app mb-0">
+                                <thead>
+                                <tr>
+                                    <th th:text="#{expense.field.expenseDate}">利用日</th>
+                                    <th th:text="#{expense.field.category}">科目</th>
+                                    <th th:text="#{expense.field.taxRate}">税率</th>
+                                    <th class="text-end" th:text="#{expense.field.amount}">金額</th>
+                                    <th th:text="#{expense.field.memo}">メモ</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="detail : ${expense.details}">
+                                    <td th:text="${#temporals.format(detail.expenseDate, 'yyyy/MM/dd')}">-</td>
+                                    <td th:text="${detail.category != null ? detail.category.categoryName : '-'}">-</td>
+                                    <td th:text="${detail.taxRate != null ? detail.taxRate.description : '-'}">-</td>
+                                    <td class="amount-cell" th:text="${#numbers.formatInteger(detail.amount, 0, 'COMMA')} + ' 円'">0</td>
+                                    <td th:text="${detail.memo != null ? detail.memo : '-'}">-</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card app-card">
+                    <div class="card-header" th:text="#{expense.field.receipt}">領収書</div>
+                    <div class="card-body">
+                        <div class="row g-3" th:if="${!#lists.isEmpty(expense.receiptImages)}">
+                            <div class="col-md-4" th:each="image : ${expense.receiptImages}">
+                                <div class="border rounded p-2 text-center">
+                                    <a th:href="@{/expenses/{eid}/receipts/{iid}(eid=${expense.expenseId}, iid=${image.imageId})}"
+                                       target="_blank">
+                                        <img th:if="${!#strings.endsWith(image.filePath, '.pdf')}"
+                                             th:src="@{/expenses/{eid}/receipts/{iid}(eid=${expense.expenseId}, iid=${image.imageId})}"
+                                             class="receipt-thumb img-fluid" alt="領収書">
+                                        <div th:if="${#strings.endsWith(image.filePath, '.pdf')}" class="py-4">
+                                            <i class="bi bi-file-earmark-pdf fs-1 text-danger"></i>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <p th:if="${#lists.isEmpty(expense.receiptImages)}" class="text-muted mb-0">領収書は未登録です。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card app-card mb-4" th:if="${canApprove}">
+                    <div class="card-header" th:text="#{approval.form.title}">承認処理</div>
+                    <div class="card-body">
+                        <form th:object="${approvalForm}" id="approval-form">
+                            <input type="hidden" th:field="*{version}">
+                            <div class="mb-3">
+                                <label for="comment" class="form-label" th:text="#{approval.field.comment}">コメント</label>
+                                <textarea class="form-control" id="comment" rows="3" th:field="*{comment}" maxlength="500"></textarea>
+                                <div class="form-text" th:text="#{approval.field.comment.hint}">差戻しするときはコメント必須です。</div>
+                                <div class="text-danger small" th:errors="*{comment}"></div>
+                            </div>
+                        </form>
+                        <div class="d-grid gap-2">
+                            <form th:action="@{/approvals/{id}/approve(id=${expense.expenseId})}" method="post">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                <input type="hidden" name="version" th:value="${approvalForm.version}">
+                                <input type="hidden" name="comment" id="approve-comment">
+                                <button type="submit" class="btn btn-success w-100"
+                                        onclick="document.getElementById('approve-comment').value=document.getElementById('comment').value;">
+                                    <i class="bi bi-check-lg me-1"></i><span th:text="#{approval.approve}">承認</span>
+                                </button>
+                            </form>
+                            <form th:action="@{/approvals/{id}/reject(id=${expense.expenseId})}" method="post"
+                                  onsubmit="document.getElementById('reject-comment').value=document.getElementById('comment').value; return confirm('差戻しますか？');">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                <input type="hidden" name="version" th:value="${approvalForm.version}">
+                                <input type="hidden" name="comment" id="reject-comment">
+                                <button type="submit" class="btn btn-outline-danger w-100">
+                                    <i class="bi bi-x-lg me-1"></i><span th:text="#{approval.reject}">差戻し</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card app-card">
+                    <div class="card-header" th:text="#{approval.history}">承認履歴</div>
+                    <div class="card-body">
+                        <div class="history-timeline" th:if="${!#lists.isEmpty(expense.approvalHistories)}">
+                            <div class="history-item" th:each="history : ${expense.approvalHistories}">
+                                <div class="fw-semibold" th:text="#{|approval.action.${history.action}|}">申請</div>
+                                <div class="small text-muted">
+                                    <span th:text="${history.approver != null ? history.approver.userName : '-'}">user</span>
+                                    ·
+                                    <span th:text="${#temporals.format(history.createdAt, 'yyyy/MM/dd HH:mm')}">date</span>
+                                </div>
+                                <div class="small mt-1" th:if="${history.comment != null}" th:text="${history.comment}"></div>
+                            </div>
+                        </div>
+                        <p th:if="${#lists.isEmpty(expense.approvalHistories)}" class="text-muted mb-0">履歴はありません。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{layout/fragments :: footer}"></footer>
+<th:block th:replace="~{layout/fragments :: scripts}"></th:block>
+</body>
+</html>

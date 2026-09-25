@@ -1,0 +1,152 @@
+:root {
+    --app-primary: #2563eb;
+    --app-primary-dark: #1d4ed8;
+    --app-sidebar-bg: #0f172a;
+    --app-body-bg: #f1f5f9;
+    --app-card-border: #e2e8f0;
+}
+
+body.app-body {
+    background-color: var(--app-body-bg);
+    min-height: 100vh;
+}
+
+.app-navbar {
+    background: linear-gradient(90deg, #0f172a 0%, #1e293b 100%);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+}
+
+.app-navbar .navbar-brand {
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.app-navbar .nav-link {
+    color: rgba(255, 255, 255, 0.85) !important;
+    font-weight: 500;
+}
+
+.app-navbar .nav-link:hover,
+.app-navbar .nav-link.active {
+    color: #fff !important;
+}
+
+.app-main {
+    padding: 2rem 0 3rem;
+}
+
+.app-card {
+    border: 1px solid var(--app-card-border);
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.app-card .card-header {
+    background: #fff;
+    border-bottom: 1px solid var(--app-card-border);
+    font-weight: 600;
+}
+
+.page-title {
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 0.25rem;
+}
+
+.page-subtitle {
+    color: #64748b;
+    margin-bottom: 1.5rem;
+}
+
+.status-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.35em 0.65em;
+    border-radius: 999px;
+}
+
+.table-app thead th {
+    background: #f8fafc;
+    color: #475569;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-transform: none;
+    border-bottom-width: 1px;
+}
+
+.table-app tbody td {
+    vertical-align: middle;
+}
+
+.amount-cell {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.detail-row {
+    background: #f8fafc;
+    border: 1px solid var(--app-card-border);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.login-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #2563eb 100%);
+}
+
+.login-card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+}
+
+.app-footer {
+    color: #94a3b8;
+    font-size: 0.875rem;
+    padding: 1.5rem 0;
+}
+
+.receipt-thumb {
+    max-height: 120px;
+    border-radius: 0.375rem;
+    border: 1px solid var(--app-card-border);
+    object-fit: cover;
+}
+
+.history-timeline {
+    border-left: 2px solid #e2e8f0;
+    margin-left: 0.5rem;
+    padding-left: 1.25rem;
+}
+
+.history-item {
+    position: relative;
+    padding-bottom: 1rem;
+}
+
+.history-item::before {
+    content: "";
+    position: absolute;
+    left: -1.45rem;
+    top: 0.35rem;
+    width: 0.625rem;
+    height: 0.625rem;
+    background: var(--app-primary);
+    border-radius: 50%;
+}
+
+.btn-primary {
+    background-color: var(--app-primary);
+    border-color: var(--app-primary);
+}
+
+.btn-primary:hover {
+    background-color: var(--app-primary-dark);
+    border-color: var(--app-primary-dark);
+}

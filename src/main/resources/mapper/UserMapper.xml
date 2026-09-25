@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.expenseapp.mapper.UserMapper">
+
+    <resultMap id="userWithOrgMap" type="com.example.expenseapp.entity.User">
+        <id column="user_id" property="userId"/>
+        <result column="user_name" property="userName"/>
+        <result column="email" property="email"/>
+        <result column="password" property="password"/>
+        <result column="dept_id" property="deptId"/>
+        <result column="position_id" property="positionId"/>
+        <result column="role" property="role"/>
+        <association property="department" javaType="com.example.expenseapp.entity.Department">
+            <id column="dept_id" property="deptId"/>
+            <result column="dept_name" property="deptName"/>
+        </association>
+        <association property="position" javaType="com.example.expenseapp.entity.Position">
+            <id column="position_id" property="positionId"/>
+            <result column="position_name" property="positionName"/>
+            <result column="rank_level" property="rankLevel"/>
+        </association>
+    </resultMap>
+
+    <sql id="userWithOrgColumns">
+        u.user_id,
+        u.user_name,
+        u.email,
+        u.password,
+        u.dept_id,
+        u.position_id,
+        u.role,
+        d.dept_name,
+        p.position_name,
+        p.rank_level
+    </sql>
+
+    <select id="findById" resultMap="userWithOrgMap">
+        SELECT
+        <include refid="userWithOrgColumns"/>
+        FROM users u
+        INNER JOIN departments d ON u.dept_id = d.dept_id
+        INNER JOIN positions p ON u.position_id = p.position_id
+        WHERE u.user_id = #{userId}
+    </select>
+
+    <select id="findByUserName" resultMap="userWithOrgMap">
+        SELECT
+        <include refid="userWithOrgColumns"/>
+        FROM users u
+        INNER JOIN departments d ON u.dept_id = d.dept_id
+        INNER JOIN positions p ON u.position_id = p.position_id
+        WHERE u.user_name = #{userName}
+    </select>
+
+    <update id="updatePassword">
+        UPDATE users
+        SET password = #{password}
+        WHERE user_id = #{userId}
+    </update>
+</mapper>

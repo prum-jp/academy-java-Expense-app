@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: head(#{expense.form.title})}"></head>
+<body class="app-body">
+<nav th:replace="~{layout/fragments :: navbar}"></nav>
+<div th:replace="~{layout/fragments :: alerts}"></div>
+
+<main class="app-main">
+    <div class="container">
+        <h1 class="page-title" th:text="#{expense.form.title}">経費申請</h1>
+        <p class="page-subtitle" th:text="${expenseForm.editMode} ? '下書きを編集しています。' : '新しい経費申請を作成します。'"></p>
+
+        <form th:object="${expenseForm}"
+              th:action="${expenseForm.editMode} ? @{/expenses/{id}(id=${expenseForm.expenseId})} : @{/expenses}"
+              method="post" class="card app-card">
+            <div class="card-body p-4">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <input type="hidden" th:field="*{expenseId}">
+                <input type="hidden" th:field="*{version}" th:if="${expenseForm.editMode}">
+
+                <div class="mb-4">
+                    <label for="title" class="form-label">
+                        <span th:text="#{expense.field.title}">件名</span>
+                        <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" class="form-control" id="title" th:field="*{title}" maxlength="100" required>
+                    <div class="text-danger small" th:errors="*{title}"></div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h6 mb-0">明細</h2>
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="add-detail-row">
+                        <i class="bi bi-plus-lg me-1"></i><span th:text="#{expense.detail.add}">明細を追加</span>
+                    </button>
+                </div>
+
+                <div id="detail-rows">
+                    <div class="detail-row" th:each="detail, stat : *{details}">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label" th:text="#{expense.field.expenseDate}">利用日</label>
+                                <input type="date" class="form-control"
+                                       th:field="*{details[__${stat.index}__].expenseDate}" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label" th:text="#{expense.field.category}">科目</label>
+                                <select class="form-select" th:field="*{details[__${stat.index}__].categoryId}" required>
+                                    <option value="">選択してください</option>
+                                    <option th:each="cat : ${categories}" th:value="${cat.categoryId}"
+                                            th:text="${cat.categoryName}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label" th:text="#{expense.field.taxRate}">税率</label>
+                                <select class="form-select" th:field="*{details[__${stat.index}__].taxId}" required>
+                                    <option value="">選択</option>
+                                    <option th:each="tax : ${taxRates}" th:value="${tax.taxId}"
+                                            th:text="${tax.description}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label" th:text="#{expense.field.amount}">金額</label>
+                                <input type="number" class="form-control" min="0" step="1"
+                                       th:field="*{details[__${stat.index}__].amount}" required>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="button" class="btn btn-outline-danger btn-sm remove-detail-row w-100">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label" th:text="#{expense.field.memo}">メモ</label>
+                                <input type="text" class="form-control" maxlength="255"
+                                       th:field="*{details[__${stat.index}__].memo}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-danger small" th:if="${#fields.hasErrors('details')}" th:errors="*{details}"></div>
+
+                <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-1"></i><span th:text="#{common.save}">保存</span>
+                    </button>
+                    <a th:href="${expenseForm.editMode} ? @{/expenses/{id}(id=${expenseForm.expenseId})} : @{/expenses}"
+                       class="btn btn-outline-secondary" th:text="#{common.cancel}">キャンセル</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</main>
+
+<footer th:replace="~{layout/fragments :: footer}"></footer>
+<th:block th:replace="~{layout/fragments :: scripts}"></th:block>
+<script th:src="@{/js/expense-form.js}"></script>
+</body>
+</html>

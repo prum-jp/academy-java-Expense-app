@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.expenseapp.mapper.ExpenseDetailMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="detailId">
+        INSERT INTO expense_details (
+            expense_id, expense_date, category_id, tax_id, amount, memo
+        ) VALUES (
+            #{expenseId}, #{expenseDate}, #{categoryId}, #{taxId}, #{amount}, #{memo}
+        )
+    </insert>
+
+    <insert id="insertBatch">
+        INSERT INTO expense_details (
+            expense_id, expense_date, category_id, tax_id, amount, memo
+        ) VALUES
+        <foreach collection="details" item="item" separator=",">
+            (
+                #{expenseId},
+                #{item.expenseDate},
+                #{item.categoryId},
+                #{item.taxId},
+                #{item.amount},
+                #{item.memo}
+            )
+        </foreach>
+    </insert>
+
+    <delete id="deleteByExpenseId">
+        DELETE FROM expense_details
+        WHERE expense_id = #{expenseId}
+    </delete>
+</mapper>

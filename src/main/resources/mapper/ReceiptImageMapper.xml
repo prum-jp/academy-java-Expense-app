@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.expenseapp.mapper.ReceiptImageMapper">
+
+    <resultMap id="receiptImageMap" type="com.example.expenseapp.entity.ReceiptImage">
+        <id column="image_id" property="imageId"/>
+        <result column="expense_id" property="expenseId"/>
+        <result column="file_path" property="filePath"/>
+        <result column="uploaded_at" property="uploadedAt"/>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="imageId">
+        INSERT INTO receipt_images (expense_id, file_path, uploaded_at)
+        VALUES (#{expenseId}, #{filePath}, #{uploadedAt})
+    </insert>
+
+    <select id="findByExpenseId" resultMap="receiptImageMap">
+        SELECT image_id, expense_id, file_path, uploaded_at
+        FROM receipt_images
+        WHERE expense_id = #{expenseId}
+        ORDER BY uploaded_at, image_id
+    </select>
+
+    <delete id="deleteByExpenseId">
+        DELETE FROM receipt_images
+        WHERE expense_id = #{expenseId}
+    </delete>
+
+    <delete id="deleteByIdAndExpenseId">
+        DELETE FROM receipt_images
+        WHERE image_id = #{imageId}
+          AND expense_id = #{expenseId}
+    </delete>
+</mapper>

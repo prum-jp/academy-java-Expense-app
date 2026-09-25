@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: head(#{expense.list.title})}"></head>
+<body class="app-body">
+<nav th:replace="~{layout/fragments :: navbar}"></nav>
+<div th:replace="~{layout/fragments :: alerts}"></div>
+
+<main class="app-main">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="page-title" th:text="#{expense.list.title}">マイ経費一覧</h1>
+                <p class="page-subtitle mb-0">申請状況の確認と下書きの編集ができます。新しい順に最大 100 件まで表示します。</p>
+            </div>
+            <a th:href="@{/expenses/new}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i>新規申請
+            </a>
+        </div>
+
+        <div class="card app-card mb-4">
+            <div class="card-body">
+                <form th:action="@{/expenses}" method="get" class="row g-3 align-items-end">
+                    <div class="col-md-5">
+                        <label class="form-label" for="keyword">キーワード</label>
+                        <input type="text" class="form-control" id="keyword" name="keyword"
+                               th:value="${keyword}" placeholder="件名で検索">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="status" th:text="#{expense.field.status}">ステータス</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="">すべて</option>
+                            <option th:each="s : ${statuses}" th:value="${s}" th:text="#{|expense.status.${s}|}"
+                                    th:selected="${s == selectedStatus}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-search me-1"></i><span th:text="#{common.search}">検索</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card app-card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-app table-hover mb-0">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th th:text="#{expense.field.title}">件名</th>
+                            <th th:text="#{expense.field.status}">ステータス</th>
+                            <th class="text-end" th:text="#{expense.field.totalAmount}">合計</th>
+                            <th th:text="#{expense.field.submittedAt}">申請日時</th>
+                            <th th:text="#{common.actions}">操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="expense : ${expenses}">
+                            <td th:text="${expense.expenseId}">1</td>
+                            <td>
+                                <a th:href="@{/expenses/{id}(id=${expense.expenseId})}" th:text="${expense.title}">件名</a>
+                            </td>
+                            <td>
+                                <span class="badge status-badge"
+                                      th:classappend="${expense.status.name() == 'DRAFT'} ? 'bg-secondary' :
+                                      (${expense.status.name() == 'PENDING'} ? 'bg-warning text-dark' :
+                                      (${expense.status.name() == 'APPROVED'} ? 'bg-success' : 'bg-danger'))"
+                                      th:text="#{|expense.status.${expense.status}|}">下書き</span>
+                            </td>
+                            <td class="amount-cell">
+                                <span th:text="${#numbers.formatInteger(expense.totalAmount, 0, 'COMMA')} + ' 円'">0 円</span>
+                            </td>
+                            <td>
+                                <span th:if="${expense.submittedAt != null}"
+                                      th:text="${#temporals.format(expense.submittedAt, 'yyyy/MM/dd HH:mm')}">-</span>
+                                <span th:if="${expense.submittedAt == null}" class="text-muted">-</span>
+                            </td>
+                            <td>
+                                <a th:href="@{/expenses/{id}(id=${expense.expenseId})}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a th:if="${expense.status.editable}" th:href="@{/expenses/{id}/edit(id=${expense.expenseId})}"
+                                   class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(expenses)}">
+                            <td colspan="6" class="text-center text-muted py-5" th:text="#{common.noData}">データがありません</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{layout/fragments :: footer}"></footer>
+<th:block th:replace="~{layout/fragments :: scripts}"></th:block>
+</body>
+</html>

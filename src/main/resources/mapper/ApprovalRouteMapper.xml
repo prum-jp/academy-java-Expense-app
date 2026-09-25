@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.expenseapp.mapper.ApprovalRouteMapper">
+
+    <resultMap id="approvalRouteMap" type="com.example.expenseapp.entity.ApprovalRoute">
+        <id column="route_id" property="routeId"/>
+        <result column="dept_id" property="deptId"/>
+        <result column="step_number" property="stepNumber"/>
+        <result column="approver_user_id" property="approverUserId"/>
+        <association property="department" javaType="com.example.expenseapp.entity.Department">
+            <id column="dept_id" property="deptId"/>
+            <result column="dept_name" property="deptName"/>
+        </association>
+        <association property="approver" javaType="com.example.expenseapp.entity.User">
+            <id column="approver_user_id" property="userId"/>
+            <result column="approver_user_name" property="userName"/>
+        </association>
+    </resultMap>
+
+    <select id="findByDeptIdOrderByStep" resultMap="approvalRouteMap">
+        SELECT
+            ar.route_id,
+            ar.dept_id,
+            ar.step_number,
+            ar.approver_user_id,
+            d.dept_name,
+            u.user_name AS approver_user_name
+        FROM approval_routes ar
+        INNER JOIN departments d ON ar.dept_id = d.dept_id
+        INNER JOIN users u ON ar.approver_user_id = u.user_id
+        WHERE ar.dept_id = #{deptId}
+        ORDER BY ar.step_number
+    </select>
+
+    <select id="findCurrentStep" resultMap="approvalRouteMap">
+        SELECT
+            ar.route_id,
+            ar.dept_id,
+            ar.step_number,
+            ar.approver_user_id,
+            d.dept_name,
+            u.user_name AS approver_user_name
+        FROM approval_routes ar
+        INNER JOIN departments d ON ar.dept_id = d.dept_id
+        INNER JOIN users u ON ar.approver_user_id = u.user_id
+        WHERE ar.dept_id = #{deptId}
+          AND ar.step_number = (
+              SELECT COUNT(*) + 1
+              FROM approval_histories ah
+              WHERE ah.expense_id = #{expenseId}
+                AND ah.action IN ('APPROVE', 'REJECT')
+          )
+    </select>
+</mapper>

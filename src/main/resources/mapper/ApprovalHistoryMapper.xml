@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.expenseapp.mapper.ApprovalHistoryMapper">
+
+    <resultMap id="approvalHistoryMap" type="com.example.expenseapp.entity.ApprovalHistory">
+        <id column="history_id" property="historyId"/>
+        <result column="expense_id" property="expenseId"/>
+        <result column="approver_user_id" property="approverUserId"/>
+        <result column="action" property="action"/>
+        <result column="comment" property="comment"/>
+        <result column="created_at" property="createdAt"/>
+        <association property="approver" javaType="com.example.expenseapp.entity.User">
+            <id column="approver_user_id" property="userId"/>
+            <result column="approver_user_name" property="userName"/>
+        </association>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="historyId">
+        INSERT INTO approval_histories (
+            expense_id, approver_user_id, action, comment, created_at
+        ) VALUES (
+            #{expenseId}, #{approverUserId}, #{action}, #{comment}, #{createdAt}
+        )
+    </insert>
+
+    <select id="findByExpenseId" resultMap="approvalHistoryMap">
+        SELECT
+            ah.history_id,
+            ah.expense_id,
+            ah.approver_user_id,
+            ah.action,
+            ah.comment,
+            ah.created_at,
+            u.user_name AS approver_user_name
+        FROM approval_histories ah
+        INNER JOIN users u ON ah.approver_user_id = u.user_id
+        WHERE ah.expense_id = #{expenseId}
+        ORDER BY ah.created_at, ah.history_id
+    </select>
+</mapper>

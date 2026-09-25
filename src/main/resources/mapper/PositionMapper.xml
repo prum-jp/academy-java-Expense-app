@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.expenseapp.mapper.PositionMapper">
+
+    <resultMap id="positionMap" type="com.example.expenseapp.entity.Position">
+        <id column="position_id" property="positionId"/>
+        <result column="position_name" property="positionName"/>
+        <result column="rank_level" property="rankLevel"/>
+    </resultMap>
+
+    <select id="findById" resultMap="positionMap">
+        SELECT position_id, position_name, rank_level
+        FROM positions
+        WHERE position_id = #{positionId}
+    </select>
+
+    <select id="findAll" resultMap="positionMap">
+        SELECT position_id, position_name, rank_level
+        FROM positions
+        ORDER BY rank_level, position_id
+    </select>
+</mapper>
