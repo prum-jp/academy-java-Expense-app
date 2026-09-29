@@ -48,6 +48,13 @@ git switch -c <ブランチ名>
 
 ⑦ 課題に取り組む。
 
+実装内容を画面にリアルタイムで反映するには、コンテナを一度止めて次を実行してください。ソースは Docker 内で再コンパイルされ、保存から数秒で http://localhost:8081 に反映されます。
+
+```bash
+docker compose down
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+```
+
 ⑧ 変更をコミット＆プッシュする。
 
 ```bash
@@ -71,26 +78,6 @@ PR を作成する際は、以下の内容を記載してください。
 
 提出された PR に対して、メンターがコードレビューを行います。  
 レビューでは、コードの綺麗さだけでなく、「なぜそのように直したのか」という意図が正しく説明できているかを重視します。
-
-## ローカル開発
-
-受講者向けはこれまでどおり `docker compose up --build -d` です。ソースを保存してすぐ確認したいときは、次のどちらかです。
-
-**Java 21 がある場合**
-
-```bash
-docker compose up -d mysql
-docker compose stop app
-./gradlew bootRun
-```
-
-**Java が無い場合（このマシン向け）**
-
-```bash
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up
-```
-
-どちらも保存すると Gradle が再コンパイルし、DevTools がアプリを再起動します。HTML / CSS は再起動なしで反映されることがあります。URL は http://localhost:8081 です。
 
 ## よく使うコマンド
 
