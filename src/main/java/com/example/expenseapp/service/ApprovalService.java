@@ -66,14 +66,11 @@ public class ApprovalService {
     public Expense getExpenseForApprover(Integer expenseId, LoginUser approver) {
         Expense expense = expenseMapper.findAccessibleByApprover(expenseId, approver.getUserId())
                 .orElseThrow(() -> new ExpenseNotFoundException(expenseId));
-        if (expense.getStatus().isPending()
-                && !expenseAuthorizationService.canApprove(expenseId, approver)) {
-            throw new AccessDeniedException(messages.get("error.access.denied"));
+        if (expenseAuthorizationService.canView(expenseId, approver)
+                || expenseAuthorizationService.isUpcomingApprover(expenseId, approver)) {
+            return expense;
         }
-        if (!expenseAuthorizationService.canView(expenseId, approver)) {
-            throw new AccessDeniedException(messages.get("error.access.denied"));
-        }
-        return expense;
+        throw new AccessDeniedException(messages.get("error.access.denied"));
     }
 
     @Audited(action = AuditLogService.ACTION_EXPENSE_APPROVE, targetTable = AuditLogService.TABLE_EXPENSES, idParam = "expenseId")

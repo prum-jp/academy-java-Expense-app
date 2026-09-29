@@ -1,0 +1,32 @@
+services:
+  app:
+    build: !reset
+    image: eclipse-temurin:21-jdk
+    container_name: expense-app
+    working_dir: /workspace
+    entrypoint: [""]
+    command:
+      - bash
+      - -lc
+      - mkdir -p /app/uploads/receipts && chmod +x gradlew && ./gradlew bootRun --continuous -x test
+    ports:
+      - "8081:8081"
+      - "35729:35729"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker,dev
+      TZ: Asia/Tokyo
+    volumes:
+      - .:/workspace
+      - gradle-cache:/root/.gradle
+      - expense-receipts:/app/uploads/receipts
+    healthcheck:
+      disable: true
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - expense-net
+
+volumes:
+  gradle-cache:

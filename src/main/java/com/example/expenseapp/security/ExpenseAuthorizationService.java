@@ -45,12 +45,7 @@ public class ExpenseAuthorizationService {
             return false;
         }
         Integer deptId = expense.getApplicant().getDeptId();
-        return approvalRouteMapper.findCurrentStep(deptId, expenseId)
-                .map(current -> approvalRouteMapper.findByDeptIdOrderByStep(deptId).stream()
-                        .filter(route -> loginUser.getUserId().equals(route.getApproverUserId()))
-                        .anyMatch(route -> route.getStepNumber() != null
-                                && route.getStepNumber() == current.getStepNumber()))
-                .orElse(false);
+        return matchesCurrentStep(deptId, expenseId, loginUser, false);
     }
 
     public boolean canEdit(Integer expenseId, LoginUser loginUser) {
@@ -83,6 +78,36 @@ public class ExpenseAuthorizationService {
             return false;
         }
         return expenseMapper.findAccessibleByApprover(expenseId, loginUser.getUserId()).isPresent();
+    }
+
+    public boolean isUpcomingApprover(Integer expenseId, LoginUser loginUser) {
+        if (expenseId == null || loginUser == null || !loginUser.isApprover()) {
+            return false;
+        }
+        Expense expense = expenseMapper.findAccessibleByApprover(expenseId, loginUser.getUserId()).orElse(null);
+        if (expense == null || !expense.getStatus().isPending()) {
+            return false;
+        }
+        if (expense.getApplicant() == null || expense.getApplicant().getDeptId() == null) {
+            return false;
+        }
+        return matchesCurrentStep(expense.getApplicant().getDeptId(), expenseId, loginUser, true);
+    }
+
+    private boolean matchesCurrentStep(
+            Integer deptId,
+            Integer expenseId,
+            LoginUser loginUser,
+            boolean upcomingOnly) {
+        return approvalRouteMapper.findCurrentStep(deptId, expenseId)
+                .map(current -> approvalRouteMapper.findByDeptIdOrderByStep(deptId).stream()
+                        .filter(route -> loginUser.getUserId().equals(route.getApproverUserId()))
+                        .anyMatch(route -> route.getStepNumber() != null
+                                && current.getStepNumber() != null
+                                && (upcomingOnly
+                                ? route.getStepNumber() > current.getStepNumber()
+                                : route.getStepNumber() == current.getStepNumber())))
+                .orElse(false);
     }
 
     public boolean isOwner(Integer expenseId, LoginUser loginUser) {
