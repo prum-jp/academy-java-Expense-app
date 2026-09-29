@@ -7,12 +7,6 @@
 
 Java や Gradle のインストールは不要です。
 
-## 関連資料
-
-- [仕様書](https://docs.google.com/document/d/1VQXKLP7AfKiuNDkyLfnITViMbQZ-a9ovd-xmws9SaGE/edit?tab=t.0)
-- [テーブル定義書](https://docs.google.com/spreadsheets/d/1-3y0G2V3uBkmht7qK8dBdykN3xW0Ha4XsQubj_ehz1o/edit?gid=0#gid=0)
-- [テストケース](https://docs.google.com/spreadsheets/d/1HPA0rZDAcmpzk9sZD0kjksv_7SdSa73u/edit?gid=233462725#gid=233462725)
-
 ## 環境構築
 
 ① ブラウザで以下にアクセスする。
@@ -67,17 +61,19 @@ git push origin <ブランチ名>
 
 不具合1件につき PR を1本作る。
 
-## Pull Request（PR）の記載事項
+## 各種資料
+- [仕様書](https://docs.google.com/document/d/1VQXKLP7AfKiuNDkyLfnITViMbQZ-a9ovd-xmws9SaGE/edit?tab=t.0)
+- [テーブル定義書](https://docs.google.com/spreadsheets/d/1-3y0G2V3uBkmht7qK8dBdykN3xW0Ha4XsQubj_ehz1o/edit?gid=0#gid=0)
+- [テストケース](https://docs.google.com/spreadsheets/d/1HPA0rZDAcmpzk9sZD0kjksv_7SdSa73u/edit?gid=233462725#gid=233462725)
 
-PR を作成する際は、以下の内容を記載してください。
+※テストケースは自身の個人ドライブにコピーして使用してください
 
-- 変更の意図: なぜそのように直したのか（理由を言語化してください）。
-- 工夫した点: 読みやすくするために意識したこと。
+※仕様書/テーブル定義書は編集厳禁です。
 
 ## 評価・フィードバック
 
-提出された PR に対して、メンターがコードレビューを行います。  
-レビューでは、コードの綺麗さだけでなく、「なぜそのように直したのか」という意図が正しく説明できているかを重視します。
+提出された PR に対して、メンターがレビューを行います。  
+不具合修正前と修正後の挙動がわかるようにPRを作成してください
 
 ## よく使うコマンド
 
