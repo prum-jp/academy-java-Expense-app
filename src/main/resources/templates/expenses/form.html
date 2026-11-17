@@ -23,7 +23,7 @@
                         <span th:text="#{expense.field.title}">件名</span>
                         <span class="text-danger">*</span>
                     </label>
-                    <input type="text" class="form-control" id="title" th:field="*{title}" maxlength="100" required>
+                    <input type="text" class="form-control" id="title" th:field="*{title}" maxlength="100">
                     <div class="text-danger small" th:errors="*{title}"></div>
                 </div>
 
